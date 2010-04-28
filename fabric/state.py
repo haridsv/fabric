@@ -46,7 +46,11 @@ class _AttributeDict(dict):
     """
     def __getattr__(self, key):
         try:
-            return self[key]
+            value = self[key]
+            if callable(value):
+                value = value()
+                self[key] = value
+            return value
         except KeyError:
             # to conform with __getattr__ spec
             raise AttributeError(key)

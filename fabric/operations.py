@@ -12,6 +12,7 @@ import stat
 import subprocess
 import sys
 import time
+from getpass import getpass
 from traceback import format_exc
 
 from contextlib import closing
@@ -140,7 +141,7 @@ def require(*keys, **kwargs):
     abort(msg)
 
 
-def prompt(text, key=None, default='', validate=None):
+def prompt(text, key=None, default='', validate=None, echo=True):
     """
     Prompt user with ``text`` and return the input (like ``raw_input``).
 
@@ -173,6 +174,9 @@ def prompt(text, key=None, default='', validate=None):
     Either way, `prompt` will re-prompt until validation passes (or the user
     hits ``Ctrl-C``).
 
+    The optional keyword argument ``echo`` controls whether the text entered by
+    the user is echoed back to the console.
+
     Examples::
     
         # Simplest form:
@@ -204,7 +208,7 @@ def prompt(text, key=None, default='', validate=None):
     value = None
     while value is None:
         # Get input
-        value = raw_input(prompt_str) or default
+        value = (echo and raw_input or getpass)(prompt_str) or default
         # Handle validation
         if validate:
             # Callable
@@ -240,6 +244,25 @@ def prompt(text, key=None, default='', validate=None):
         ))
     # And return the value, too, just in case someone finds that useful.
     return value
+
+class prompt_call(object):
+    """
+    Creates an object that ``prompt()``'s when called.
+    The constructor of this object takes the same arguments and defaults as the
+    ``prompt`` function. This class is designed specifically for use with the
+    fill-on-demand feature of the environment.
+
+    Examples::
+        env.password = prompt_call('Enter password: ', echo=False)
+    """
+    def __init__(self, text, default='', validate=None, echo=True):
+        self.text = text
+        self.default = default
+        self.validate = validate
+        self.echo = echo
+
+    def __call__(self):
+        return prompt(self.text, default=self.default, validate=self.validate, echo=self.echo)
 
 
 @needs_host
