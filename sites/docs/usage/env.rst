@@ -30,6 +30,19 @@ commonly-modified env vars include:
 There are a number of other env variables; for the full list, see
 :ref:`env-vars` at the bottom of this document.
 
+Fill-on-demand env variables
+----------------------------
+
+When variable values are ``callable``, Fabric performs the following actions
+the first time the variable is accessed:
+* Invokes (calls) the ``callable`` object.
+* Replaces the variable value with the return value of the above call.
+
+This is in general useful in two scenarios:
+* Fill in a value programmatically and only when needed.
+* Fill in a value (e.g., by prompting the user) on-demand, when multiple
+  operations depend on the value.
+
 The `~fabric.context_managers.settings` context manager
 -------------------------------------------------------
 
